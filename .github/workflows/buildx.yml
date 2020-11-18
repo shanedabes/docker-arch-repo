@@ -14,7 +14,7 @@ env:
   IMAGE_NAME: shanedabes/docker-arch-repo
 
 jobs:
-  docker:
+  builder:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
 
@@ -33,7 +33,7 @@ jobs:
 
       - name: Build and push
         run: |
-          IMAGE_ID=$IMAGE_NAME
+          IMAGE_ID=shanedabes/docker-arch-repo
 
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -51,4 +51,43 @@ jobs:
             --push \
             --platform linux/amd64 \
             --tag ${IMAGE_ID}:${VERSION} \
-            --file ./Dockerfile .
+            --file ./repo-builder.Dockerfile .
+
+  server:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+
+      - name: Login to registry
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u shanedabes --password-stdin
+
+      - name: Build and push
+        run: |
+          IMAGE_ID=shanedabes/docker-arch-repo-server
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          docker buildx build \
+            --push \
+            --platform linux/amd64 \
+            --tag ${IMAGE_ID}:${VERSION} \
+            --file ./httpserver.Dockerfile .
