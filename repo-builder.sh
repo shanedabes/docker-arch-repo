@@ -37,6 +37,9 @@ fi
 
 if [ -n "${ARCH_REPO_NAME}" ]; then
     ln -sf /repo/repo.db.tar.gz "/repo/${ARCH_REPO_NAME}.db.tar.gz"
+    ln -sf /repo/repo.db "/repo/${ARCH_REPO_NAME}.db"
+    ln -sf /repo/repo.files "/repo/${ARCH_REPO_NAME}.files"
+    ln -sf /repo/repo.files.tar.gz "/repo/${ARCH_REPO_NAME}.files.tar.gz"
 fi
 
 if [ ! -d /git/.git ]; then
