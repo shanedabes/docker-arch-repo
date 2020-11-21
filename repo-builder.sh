@@ -60,7 +60,7 @@ build() {
     git pull --no-rebase 
 
     # Generate SRCINFO files for updated packages and git packages
-    find . -name PKGBUILD -execdir sh -c 'echo "==> Generating ${PWD##*/} SRCINFO file"; makepkg --printsrcinfo > .SRCINFO' \;
+    find . -name PKGBUILD -execdir sh -c '[ ! -f .SRCINFO ] && (echo "==> Generating ${PWD##*/} scrinfo"; makepkg --printsrcinfo > .SRCINFO)' \;
 
     echo "==> Generating dependency graph"
     aur graph /git/*/.SRCINFO | tsort | tac > queue
